@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/headerContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:padding="4dp"
+        android:background="@color/colorPrimary">
+
+        <TextView
+            android:id="@+id/textViewHeaderBookingDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="@color/design_default_color_on_primary"
+            android:text="Wed, July 08, 2020"
+            android:layout_marginLeft="8dp"/>
+
+    </LinearLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp"
+                    android:layout_marginLeft="8dp">
+
+                    <TextView
+                        android:id="@+id/textViewPassengerName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Passenger Name"
+                        style="?attr/textAppearanceHeadline6" />
+
+                    <TextView
+                        android:id="@+id/textViewContactNumber"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Contact No.: 09989661532"
+                        style="?attr/textAppearanceBody1"/>
+
+                    <TextView
+                        android:id="@+id/textViewOrigin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Origin: Brgy. Culiat, Tandang Sora, Quezon City"
+                        style="?attr/textAppearanceBody2"/>
+
+                    <TextView
+                        android:id="@+id/textViewDestination"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Destination: Brgy. Dawis, Gasan, Marinduque"
+                        style="?attr/textAppearanceBody2"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_margin="8dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/editButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Edit"
+                        android:layout_marginRight="8dp"
+                        style="?attr/borderlessButtonStyle" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/removeButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Remove"
+                        style="?attr/borderlessButtonStyle"/>
+
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</LinearLayout>

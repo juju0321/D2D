@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/passengerName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Passenger Name"
+        android:textSize="24sp"/>
+
+    <TextView
+        android:id="@+id/passengerNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Contact Number"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:id="@+id/passengerOrigin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Origin"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:id="@+id/passengerDestination"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Destination"
+        android:textSize="20sp"/>
+
+</LinearLayout>

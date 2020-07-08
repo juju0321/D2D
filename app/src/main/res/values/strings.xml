@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">D2D</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="textFieldName">Name</string>
+    <string name="textFieldContact">Number</string>
+    <string name="textFieldOrigin">Origin</string>
+    <string name="textFieldDestination">Destination</string>
+    <string name="buttonSave">Save</string>
+    <string name="buttonCancel">Cancel</string>
+    <string name="booking_date">Booking Date</string>
+    <string name="calendar">calendar</string>
+</resources>
