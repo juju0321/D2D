@@ -10,4 +10,5 @@
     <string name="buttonCancel">Cancel</string>
     <string name="booking_date">Booking Date</string>
     <string name="calendar">calendar</string>
+    <string name="search_title">Name</string>
 </resources>

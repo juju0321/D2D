@@ -1,13 +1,18 @@
 package com.mamingjuju.d2d
 
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.BaseColumns
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -33,13 +38,14 @@ class BookingListFragment : Fragment() {
     ): View? {
 
         val rootView = inflater.inflate(R.layout.fragment_booking_list, container, false)
-
+        (activity as MainActivity).setActionBarTitle("Passenger List")
         mDataSet     = readDB()
         mViewManager = LinearLayoutManager(context)
         mViewAdapter = BookingListAdapter(
             mDataSet!!,
-            { primaryKey: Long, passengerInformation: PassengerInformation? -> editButtonClicked(primaryKey, passengerInformation) },
-            { position: Int, primaryKey: Long -> removeButtonClicked(position, primaryKey)} )
+            { primaryKey: Long, passengerInformation: PassengerInformation? -> cardViewClicked(primaryKey, passengerInformation) },
+            { position: Int, primaryKey: Long -> removeButtonClicked(position, primaryKey)},
+            { uriToParse: String -> onCallButtonClicked(uriToParse)})
         mRecyclerView = rootView.findViewById(R.id.bookingListRecyclerView)
         mRecyclerView.apply {
             setHasFixedSize(true)
@@ -59,7 +65,7 @@ class BookingListFragment : Fragment() {
         return rootView
     }
 
-    private fun editButtonClicked(primaryKey: Long, passengerInformation: PassengerInformation?) {
+    private fun cardViewClicked(primaryKey: Long, passengerInformation: PassengerInformation?) {
         val newBookingFragment = NewBookingFragment()
         val bundle = Bundle()
         bundle.putParcelable("passengerInfo", passengerInformation)
@@ -79,6 +85,22 @@ class BookingListFragment : Fragment() {
         mDataSet = readDB()
         mViewAdapter.deleteItemFromDataSet(mDataSet!!)
         mViewAdapter.notifyDataSetChanged()
+    }
+
+    private fun onCallButtonClicked(uriToParse: String) {
+        val callIntent = Intent(Intent.ACTION_CALL)
+        var checkCallPermission: Int = -1
+        callIntent.data = Uri.parse(uriToParse)
+        if(context != null) {
+            checkCallPermission = ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CALL_PHONE)
+        }
+        if(checkCallPermission != PackageManager.PERMISSION_GRANTED) {
+            activity?.let { ActivityCompat.requestPermissions(it,
+                arrayOf(android.Manifest.permission.CALL_PHONE), 1
+            ) }
+        }
+
+        startActivity(callIntent)
     }
 
     private fun readDB(): MutableMap<Long, PassengerInformation> {

@@ -5,24 +5,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
-import androidx.core.util.toAndroidPair
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.booking_detail.view.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-data class PassengerInformationWithKey(
-    val key: Long,
-    val name: String,
-    val number: String,
-    val origin: String,
-    val destination: String
-)
-
 @RequiresApi(Build.VERSION_CODES.O)
 class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
                          private val editButtonClickListener: (Long, PassengerInformation) -> Unit,
-                         private val removeButtonClickListener: (Int, Long) -> Unit): RecyclerView.Adapter<BookingListAdapter.ViewHolder>() {
+                         private val cardViewClickListener: (Int, Long) -> Unit,
+                         private val onCallButtonClicked: (String) -> Unit): RecyclerView.Adapter<BookingListAdapter.ViewHolder>() {
 
     private var mDataSet = myDataSet.toList().sortedBy { (_, value) -> LocalDate.parse(value.bookingDate, DateTimeFormatter.ofPattern("EEE, MMMM dd, yyyy")) }
     private var showHeader: Boolean = false
@@ -32,22 +24,26 @@ class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
         fun bind(position: Int,
                  mapOfPassengerInformationToPrimaryKey:  Pair<Long, PassengerInformation>,
                  showHeader: Boolean,
-                 editButtonClickListener: (Long, PassengerInformation) -> Unit,
-                 removeButtonClickListener: (Int, Long) -> Unit) {
+                 cardViewClickListener: (Long, PassengerInformation) -> Unit,
+                 removeButtonClickListener: (Int, Long) -> Unit,
+                 onCallButtonClicked: (String) -> Unit) {
 
             if(showHeader) {
                 itemView.headerContainer.visibility = View.VISIBLE
                 itemView.textViewHeaderBookingDate.text = mapOfPassengerInformationToPrimaryKey.second.bookingDate
+            }
+            else {
+                itemView.headerContainer.visibility = View.GONE
             }
 
             itemView.textViewPassengerName.text = mapOfPassengerInformationToPrimaryKey.second.name
             itemView.textViewContactNumber.text = mapOfPassengerInformationToPrimaryKey.second.number
             itemView.textViewOrigin.text = "Origin: " + mapOfPassengerInformationToPrimaryKey.second.origin
             itemView.textViewDestination.text = "Destination: " + mapOfPassengerInformationToPrimaryKey.second.destination
-            itemView.editButton.setOnClickListener {
+            itemView.callButton.setOnClickListener {
                 if (mapOfPassengerInformationToPrimaryKey.second != null) {
                     if (mapOfPassengerInformationToPrimaryKey.first != null) {
-                        editButtonClickListener(mapOfPassengerInformationToPrimaryKey.first, mapOfPassengerInformationToPrimaryKey.second)
+                        onCallButtonClicked("tel:${mapOfPassengerInformationToPrimaryKey.second.number}")
                     }
                 }
             }
@@ -55,6 +51,13 @@ class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
                 if (mapOfPassengerInformationToPrimaryKey.second != null) {
                     if (mapOfPassengerInformationToPrimaryKey.first != null) {
                         removeButtonClickListener(position - 1, mapOfPassengerInformationToPrimaryKey.first)
+                    }
+                }
+            }
+            itemView.setOnClickListener {
+                if (mapOfPassengerInformationToPrimaryKey.second != null) {
+                    if (mapOfPassengerInformationToPrimaryKey.first != null) {
+                        cardViewClickListener(mapOfPassengerInformationToPrimaryKey.first, mapOfPassengerInformationToPrimaryKey.second)
                     }
                 }
             }
@@ -83,7 +86,9 @@ class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
         else {
             showHeader = false
         }
-        holder.bind(position + 1, mDataSet[position], showHeader, editButtonClickListener, removeButtonClickListener)
+
+        holder.bind(position + 1, mDataSet[position], showHeader,
+            editButtonClickListener, cardViewClickListener, onCallButtonClicked)
     }
 
     fun deleteItemFromDataSet(myDataSet: Map<Long, PassengerInformation>) {

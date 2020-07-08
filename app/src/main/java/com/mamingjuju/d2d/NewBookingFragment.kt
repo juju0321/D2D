@@ -1,20 +1,19 @@
 package com.mamingjuju.d2d
 
-import android.app.DatePickerDialog
-import android.app.Dialog
+import android.app.Activity
 import android.content.ContentValues
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.provider.BaseColumns
+import android.text.InputType
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.DatePicker
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.annotation.RequiresApi
-import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.mamingjuju.d2d.databinding.NewBookingFragmentBinding
 import java.text.SimpleDateFormat
@@ -67,12 +66,26 @@ class NewBookingFragment : Fragment() {
             mPassengerBookingDateEditText?.setText(mPassengerInformation!!.bookingDate)
             mPassengerOriginEditText?.setText(mPassengerInformation!!.origin)
             mPassengerDestinationEditText?.setText(mPassengerInformation!!.destination)
+            (activity as MainActivity).setActionBarTitle("Edit Passenger Information")
+        }
+        else {
+            (activity as MainActivity).setActionBarTitle("Add Passenger Information")
         }
 
         binding.textFieldBookingDate.setEndIconOnClickListener {
             showDateTimePicker(mPassengerBookingDateEditText)
         }
 
+        binding.textFieldBookingDate.editText?.inputType = InputType.TYPE_NULL
+        binding.textFieldBookingDate.editText?.setOnClickListener {
+            showDateTimePicker(it as EditText)
+        }
+        binding.textFieldBookingDate.editText?.setOnFocusChangeListener { view, _ ->
+            if(view.hasFocus()) {
+                activity?.let { hideKeyboard(it) }
+                showDateTimePicker(view as EditText)
+            }
+        }
         binding.buttonSave.setOnClickListener {
             onClickSave()
             mDbHelper?.close()
@@ -172,6 +185,7 @@ class NewBookingFragment : Fragment() {
 
         picker.addOnCancelListener{
             Log.i("${NewBookingFragment::class.simpleName}", "Dialog was cancelled")
+            editText?.isFocusable = true
         }
 
         picker.addOnNegativeButtonClickListener {
@@ -189,6 +203,18 @@ class NewBookingFragment : Fragment() {
         }
 
         fragmentManager?.let { picker.show(it, picker.toString()) }
+    }
+
+    fun hideKeyboard(activity: Activity) {
+        val imm =
+            activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        //Find the currently focused view, so we can grab the correct window token from it.
+        var view = activity.currentFocus
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = View(activity)
+        }
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
 }
