@@ -4,6 +4,8 @@ import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Filter
+import android.widget.Filterable
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.booking_detail.view.*
@@ -14,9 +16,10 @@ import java.time.format.DateTimeFormatter
 class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
                          private val editButtonClickListener: (Long, PassengerInformation) -> Unit,
                          private val cardViewClickListener: (Int, Long) -> Unit,
-                         private val onCallButtonClicked: (String) -> Unit): RecyclerView.Adapter<BookingListAdapter.ViewHolder>() {
+                         private val onCallButtonClicked: (String) -> Unit): RecyclerView.Adapter<BookingListAdapter.ViewHolder>(), Filterable {
 
     private var mDataSet = myDataSet.toList().sortedBy { (_, value) -> LocalDate.parse(value.bookingDate, DateTimeFormatter.ofPattern("EEE, MMMM dd, yyyy")) }
+    private var mDataSetFull = myDataSet.toList().sortedBy { (_, value) -> LocalDate.parse(value.bookingDate, DateTimeFormatter.ofPattern("EEE, MMMM dd, yyyy")) }
     private var showHeader: Boolean = false
     private var currentBookingDate: String = ""
 
@@ -38,8 +41,8 @@ class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
 
             itemView.textViewPassengerName.text = mapOfPassengerInformationToPrimaryKey.second.name
             itemView.textViewContactNumber.text = mapOfPassengerInformationToPrimaryKey.second.number
-            itemView.textViewOrigin.text = "Origin: " + mapOfPassengerInformationToPrimaryKey.second.origin
-            itemView.textViewDestination.text = "Destination: " + mapOfPassengerInformationToPrimaryKey.second.destination
+            itemView.textViewOrigin.text = mapOfPassengerInformationToPrimaryKey.second.origin
+            itemView.textViewDestination.text = mapOfPassengerInformationToPrimaryKey.second.destination
             itemView.callButton.setOnClickListener {
                 if (mapOfPassengerInformationToPrimaryKey.second != null) {
                     if (mapOfPassengerInformationToPrimaryKey.first != null) {
@@ -92,8 +95,35 @@ class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
     }
 
     fun deleteItemFromDataSet(myDataSet: Map<Long, PassengerInformation>) {
-        mDataSet = myDataSet.toList()
+        mDataSet     = myDataSet.toList().sortedBy { (_, value) -> LocalDate.parse(value.bookingDate, DateTimeFormatter.ofPattern("EEE, MMMM dd, yyyy")) }
+        mDataSetFull = myDataSet.toList().sortedBy { (_, value) -> LocalDate.parse(value.bookingDate, DateTimeFormatter.ofPattern("EEE, MMMM dd, yyyy")) }
+        currentBookingDate = ""
         notifyDataSetChanged()
     }
 
+    override fun getFilter(): Filter {
+        return dataSetFilter
+    }
+
+    private val dataSetFilter: Filter = object : Filter() {
+        override fun performFiltering(constraint: CharSequence): FilterResults {
+            val filteredDataSet: MutableList<Pair<Long, PassengerInformation>> = mutableListOf()
+            if (constraint.isNullOrEmpty()) {
+                filteredDataSet.addAll(mDataSetFull)
+            } else {
+                val filterPattern = constraint.toString().toLowerCase().trim()
+                for(data in mDataSet) {
+                    if(data.second.name.toLowerCase().contains(filterPattern)) filteredDataSet.add(data)
+                }
+            }
+            return FilterResults().apply {
+                values = filteredDataSet
+            }
+        }
+        override fun publishResults(constraint: CharSequence, results: FilterResults) {
+            mDataSet = results.values as List<Pair<Long, PassengerInformation>>
+            currentBookingDate = ""
+            notifyDataSetChanged()
+        }
+    }
 }

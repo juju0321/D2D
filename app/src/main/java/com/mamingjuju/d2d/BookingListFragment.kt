@@ -7,17 +7,16 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.BaseColumns
 import android.util.Log
+import android.view.*
+import android.widget.SearchView
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class BookingListFragment : Fragment() {
+class BookingListFragment : Fragment(),  SearchView.OnQueryTextListener {
 
     private var mDbHelper: DBHelper? = null
     private var mDataSet: MutableMap<Long, PassengerInformation>? = null
@@ -29,6 +28,7 @@ class BookingListFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mDbHelper = context?.let { DBHelper(it) }
+        setHasOptionsMenu(true)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -130,6 +130,26 @@ class BookingListFragment : Fragment() {
             }
         }
         return passengerInfoToPrimaryKeysMap
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        activity?.menuInflater?.inflate(R.menu.options_menu, menu)
+        val searchItem = menu?.findItem(R.id.search)
+        val searchView = searchItem?.actionView as SearchView
+        searchView.isIconifiedByDefault = false
+        searchView.requestFocus()
+        searchView.setOnQueryTextListener(this)
+    }
+
+
+    override fun onQueryTextSubmit(p0: String?): Boolean {
+        return false
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onQueryTextChange(p0: String?): Boolean {
+        mViewAdapter.filter.filter(p0)
+        return false
     }
 
 }
