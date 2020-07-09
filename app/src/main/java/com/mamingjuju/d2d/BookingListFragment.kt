@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.BaseColumns
-import android.util.Log
 import android.view.*
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
@@ -44,8 +43,9 @@ class BookingListFragment : Fragment(),  SearchView.OnQueryTextListener {
         mViewAdapter = BookingListAdapter(
             mDataSet!!,
             { primaryKey: Long, passengerInformation: PassengerInformation? -> cardViewClicked(primaryKey, passengerInformation) },
-            { position: Int, primaryKey: Long -> removeButtonClicked(position, primaryKey)},
-            { uriToParse: String -> onCallButtonClicked(uriToParse)})
+            { primaryKey: Long -> removeButtonClicked(primaryKey)},
+            { uriToParse: String -> onCallButtonClicked(uriToParse)},
+            { onClickAddNewInfoOnEmptyList() })
         mRecyclerView = rootView.findViewById(R.id.bookingListRecyclerView)
         mRecyclerView.apply {
             setHasFixedSize(true)
@@ -66,6 +66,16 @@ class BookingListFragment : Fragment(),  SearchView.OnQueryTextListener {
         return rootView
     }
 
+    private fun onClickAddNewInfoOnEmptyList() {
+        val newBookingFragment = NewBookingFragment()
+        val fragmentTransaction = activity?.supportFragmentManager?.beginTransaction()
+        fragmentTransaction?.setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+        fragmentTransaction
+            ?.replace(R.id.mainViewFragment, newBookingFragment)
+            ?.addToBackStack("fragmentList")
+            ?.commit()
+    }
+
     private fun cardViewClicked(primaryKey: Long, passengerInformation: PassengerInformation?) {
         val newBookingFragment = NewBookingFragment()
         val bundle = Bundle()
@@ -83,7 +93,7 @@ class BookingListFragment : Fragment(),  SearchView.OnQueryTextListener {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun removeButtonClicked(position: Int, primaryKey: Long) {
+    private fun removeButtonClicked(primaryKey: Long) {
         val dbWrite = mDbHelper?.writableDatabase
         dbWrite?.delete(NewPassengerEntry.NewPassenger.TABLE_NAME, "_id = $primaryKey", null)
         mDataSet = readDB()
@@ -108,7 +118,7 @@ class BookingListFragment : Fragment(),  SearchView.OnQueryTextListener {
     }
 
     private fun readDB(): MutableMap<Long, PassengerInformation> {
-        var passengerInfoToPrimaryKeysMap : MutableMap<Long, PassengerInformation> = mutableMapOf()
+        val passengerInfoToPrimaryKeysMap : MutableMap<Long, PassengerInformation> = mutableMapOf()
         val passengerInformationList = mutableListOf<Map<Long, PassengerInformation>>()
         val dbReader   = mDbHelper?.readableDatabase
         val projection = arrayOf(BaseColumns._ID, NewPassengerEntry.NewPassenger.COLUMN_NAME,
@@ -138,7 +148,7 @@ class BookingListFragment : Fragment(),  SearchView.OnQueryTextListener {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         activity?.menuInflater?.inflate(R.menu.options_menu, menu)
-        val searchItem = menu?.findItem(R.id.search)
+        val searchItem = menu.findItem(R.id.search)
         val searchView = searchItem?.actionView as SearchView
         searchView.isIconifiedByDefault = false
         searchView.requestFocus()

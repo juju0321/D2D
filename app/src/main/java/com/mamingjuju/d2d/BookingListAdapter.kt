@@ -1,23 +1,23 @@
 package com.mamingjuju.d2d
 
 import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
-import com.mamingjuju.d2d.databinding.ActivityMainBinding.inflate
-import kotlinx.android.synthetic.main.empty_list_layout.view.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 @RequiresApi(Build.VERSION_CODES.O)
-class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
-                         private val editButtonClickListener: (Long, PassengerInformation) -> Unit,
-                         private val cardViewClickListener: (Int, Long) -> Unit,
-                         private val onCallButtonClicked: (String) -> Unit): RecyclerView.Adapter<RecyclerView.ViewHolder>(), Filterable {
+class BookingListAdapter(
+    myDataSet: Map<Long, PassengerInformation>,
+    private val editButtonClickListener: (Long, PassengerInformation) -> Unit,
+    private val cardViewClickListener: (Long) -> Unit,
+    private val onCallButtonClicked: (String) -> Unit,
+    private val onEmptyListImageClicked: () -> Unit): RecyclerView.Adapter<RecyclerView.ViewHolder>(), Filterable {
 
     private var mDataSet = myDataSet.toList().sortedBy { (_, value) -> LocalDate.parse(value.bookingDate, DateTimeFormatter.ofPattern("EEE, MMMM dd, yyyy")) }
     private var mDataSetFull = myDataSet.toList().sortedBy { (_, value) -> LocalDate.parse(value.bookingDate, DateTimeFormatter.ofPattern("EEE, MMMM dd, yyyy")) }
@@ -29,13 +29,11 @@ class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
             R.layout.empty_list_layout -> EmptyListViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.empty_list_layout, parent, false))
             else -> PassengerInfoViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.booking_detail, parent, false))
         }
-
-        return EmptyListViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.empty_list_layout, parent, false))
     }
 
     override fun getItemCount(): Int {
         return if(mDataSet.isEmpty()) {
-            99999
+            1
         }
         else {
             mDataSet.size
@@ -51,7 +49,7 @@ class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if(holder is PassengerInfoViewHolder) {
-            var primaryKeys: MutableList<Long> = mutableListOf()
+            val primaryKeys: MutableList<Long> = mutableListOf()
             mDataSet.forEach {
                 primaryKeys.add(it.first)
             }
@@ -64,11 +62,15 @@ class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
                 showHeader = false
             }
 
-            holder.bind(position + 1, mDataSet[position], showHeader,
+            holder.bind(mDataSet[position], showHeader,
                 editButtonClickListener, cardViewClickListener, onCallButtonClicked)
         }
         else if(holder is EmptyListViewHolder){
-            holder.bind("Empty list")
+            if(mDataSetFull.isNotEmpty()) {
+                holder.bind("No matching passenger on your list", onEmptyListImageClicked, false)
+            } else {
+                holder.bind("You have no passenger listed yet", onEmptyListImageClicked, true)
+            }
         }
     }
 
@@ -84,20 +86,22 @@ class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
     }
 
     private val dataSetFilter: Filter = object : Filter() {
+
         override fun performFiltering(constraint: CharSequence): FilterResults {
             val filteredDataSet: MutableList<Pair<Long, PassengerInformation>> = mutableListOf()
-            if (constraint.isNullOrEmpty()) {
+            if (constraint.isEmpty()) {
                 filteredDataSet.addAll(mDataSetFull)
             } else {
-                val filterPattern = constraint.toString().toLowerCase().trim()
+                val filterPattern = constraint.toString().toLowerCase(Locale.ROOT).trim()
                 for(data in mDataSet) {
-                    if(data.second.name.toLowerCase().contains(filterPattern)) filteredDataSet.add(data)
+                    if(data.second.name.toLowerCase(Locale.ROOT).contains(filterPattern)) filteredDataSet.add(data)
                 }
             }
             return FilterResults().apply {
                 values = filteredDataSet
             }
         }
+
         override fun publishResults(constraint: CharSequence, results: FilterResults) {
             mDataSet = results.values as List<Pair<Long, PassengerInformation>>
             currentBookingDate = ""

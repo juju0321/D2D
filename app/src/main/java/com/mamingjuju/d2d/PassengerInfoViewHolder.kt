@@ -4,11 +4,10 @@ import android.view.View
 import kotlinx.android.synthetic.main.booking_detail.view.*
 
 class PassengerInfoViewHolder(itemView: View): BaseViewHolder(itemView) {
-    fun bind(position: Int,
-             mapOfPassengerInformationToPrimaryKey:  Pair<Long, PassengerInformation>,
+    fun bind(mapOfPassengerInformationToPrimaryKey:  Pair<Long, PassengerInformation>,
              showHeader: Boolean,
              cardViewClickListener: (Long, PassengerInformation) -> Unit,
-             removeButtonClickListener: (Int, Long) -> Unit,
+             removeButtonClickListener: (Long) -> Unit,
              onCallButtonClicked: (String) -> Unit) {
 
         if(showHeader) {
@@ -24,24 +23,18 @@ class PassengerInfoViewHolder(itemView: View): BaseViewHolder(itemView) {
         itemView.textViewOrigin.text = mapOfPassengerInformationToPrimaryKey.second.origin
         itemView.textViewDestination.text = mapOfPassengerInformationToPrimaryKey.second.destination
         itemView.callButton.setOnClickListener {
-            if (mapOfPassengerInformationToPrimaryKey.second != null) {
-                if (mapOfPassengerInformationToPrimaryKey.first != null) {
-                    onCallButtonClicked("tel:${mapOfPassengerInformationToPrimaryKey.second.number}")
-                }
+            if (mapOfPassengerInformationToPrimaryKey.first != null) {
+                onCallButtonClicked("tel:${mapOfPassengerInformationToPrimaryKey.second.number}")
             }
         }
         itemView.removeButton.setOnClickListener {
-            if (mapOfPassengerInformationToPrimaryKey.second != null) {
-                if (mapOfPassengerInformationToPrimaryKey.first != null) {
-                    removeButtonClickListener(position - 1, mapOfPassengerInformationToPrimaryKey.first)
-                }
+            if (mapOfPassengerInformationToPrimaryKey.first != null) {
+                removeButtonClickListener(mapOfPassengerInformationToPrimaryKey.first)
             }
         }
         itemView.setOnClickListener {
-            if (mapOfPassengerInformationToPrimaryKey.second != null) {
-                if (mapOfPassengerInformationToPrimaryKey.first != null) {
-                    cardViewClickListener(mapOfPassengerInformationToPrimaryKey.first, mapOfPassengerInformationToPrimaryKey.second)
-                }
+            if (mapOfPassengerInformationToPrimaryKey.first != null) {
+                cardViewClickListener(mapOfPassengerInformationToPrimaryKey.first, mapOfPassengerInformationToPrimaryKey.second)
             }
         }
     }
