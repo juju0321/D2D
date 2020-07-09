@@ -72,7 +72,7 @@ class NewBookingFragment : Fragment() {
             (activity as MainActivity).setActionBarTitle("Add Passenger Information")
         }
 
-        binding.textFieldBookingDate.setEndIconOnClickListener {
+        binding.textFieldBookingDate.setStartIconOnClickListener {
             showDateTimePicker(mPassengerBookingDateEditText)
         }
 
@@ -86,11 +86,9 @@ class NewBookingFragment : Fragment() {
                 showDateTimePicker(view as EditText)
             }
         }
+
         binding.buttonSave.setOnClickListener {
             onClickSave()
-            mDbHelper?.close()
-            fragmentManager?.popBackStackImmediate()
-            startBookingListFragment()
         }
 
         binding.buttonCancel.setOnClickListener {
@@ -117,6 +115,9 @@ class NewBookingFragment : Fragment() {
     }
 
     private fun onClickSave() {
+        if(!validate()) {
+            return
+        }
         val passengerName        = mPassengerNameEditText?.text
         val passengerNumber      = mPassengerNumberEditText?.text
         val passengerBookingDate = mPassengerBookingDateEditText?.text
@@ -140,6 +141,10 @@ class NewBookingFragment : Fragment() {
         passengerBookingDate?.clear()
         passengerOrigin?.clear()
         passengerDestination?.clear()
+
+        mDbHelper?.close()
+        fragmentManager?.popBackStackImmediate()
+        startBookingListFragment()
     }
 
     private fun addNewBooking(passengerInformation: PassengerInformation): Boolean {
@@ -155,6 +160,26 @@ class NewBookingFragment : Fragment() {
         return rowInserted != (-1).toLong()
     }
 
+    private fun validate(): Boolean {
+        var isValid = true
+
+        return hasText(binding.textFieldName.editText, "Name should not be empty") and
+                hasText(binding.textFieldContactNumber.editText, "Contact Number should not be empty") and
+                hasText(binding.textFieldBookingDate.editText, "Booking date should not be empty") and
+                hasText(binding.textFieldOrigin.editText, "Origin should not be empty") and
+                hasText(binding.textFieldDestination.editText, "Destination should not be empty")
+        return true
+    }
+
+    private fun hasText(editText: EditText?, errorMessage: String): Boolean {
+
+        if(editText?.text?.isEmpty()!!) {
+            editText?.error = errorMessage
+            return false
+        }
+
+        return true
+    }
     private fun updatePassengerInformationViaPrimaryKey(passengerInformation: PassengerInformation) {
         val dbWrite = mDbHelper?.writableDatabase
         val updatedPassengerInformation = ContentValues().apply {
@@ -173,7 +198,10 @@ class NewBookingFragment : Fragment() {
 
     private fun startBookingListFragment() {
         val bookingListFragment = BookingListFragment()
-        activity?.supportFragmentManager?.beginTransaction()
+        val fragmentTransaction = activity?.supportFragmentManager?.beginTransaction()
+        fragmentTransaction?.setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+
+        fragmentTransaction
             ?.replace(R.id.mainViewFragment, bookingListFragment)
             ?.commit()
     }

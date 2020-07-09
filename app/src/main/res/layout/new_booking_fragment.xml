@@ -53,8 +53,8 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:hint="@string/booking_date"
-            app:endIconMode="custom"
-            app:endIconDrawable="@drawable/ic_baseline_calendar_today_24"
+            app:startIconDrawable="@drawable/ic_baseline_calendar_today_24"
+            app:startIconTint="@color/colorPrimary"
             android:contentDescription="@string/calendar">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -71,6 +71,8 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:hint="@string/textFieldOrigin"
+            app:startIconDrawable="@drawable/ic_baseline_trip_origin_24"
+            app:startIconTint="#0097A7"
             app:endIconMode="clear_text">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -86,6 +88,8 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:hint="@string/textFieldDestination"
+            app:startIconDrawable="@drawable/ic_baseline_pin_drop_24"
+            app:startIconTint="#EF5350"
             app:endIconMode="clear_text">
 
             <com.google.android.material.textfield.TextInputEditText

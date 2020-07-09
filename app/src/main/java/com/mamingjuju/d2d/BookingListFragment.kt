@@ -56,12 +56,13 @@ class BookingListFragment : Fragment(),  SearchView.OnQueryTextListener {
         val newBookingFragment = NewBookingFragment()
         val fabAddNewBooking   = rootView.findViewById<FloatingActionButton>(R.id.fabAddNewBooking)
         fabAddNewBooking.setOnClickListener {
-            activity?.supportFragmentManager?.beginTransaction()
+            val fragmentTransaction = activity?.supportFragmentManager?.beginTransaction()
+            fragmentTransaction?.setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+            fragmentTransaction
                 ?.replace(R.id.mainViewFragment, newBookingFragment)
                 ?.addToBackStack("fragmentList")
                 ?.commit()
         }
-
         return rootView
     }
 
@@ -72,7 +73,10 @@ class BookingListFragment : Fragment(),  SearchView.OnQueryTextListener {
         bundle.putLong("primaryKey", primaryKey)
         newBookingFragment.arguments = bundle
 
-        activity?.supportFragmentManager?.beginTransaction()
+        val fragmentTransaction = activity?.supportFragmentManager?.beginTransaction()
+        fragmentTransaction?.setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+
+        fragmentTransaction
             ?.replace(R.id.mainViewFragment, newBookingFragment)
             ?.addToBackStack("fragmentList")
             ?.commit()

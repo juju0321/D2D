@@ -1,14 +1,15 @@
 package com.mamingjuju.d2d
 
 import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.booking_detail.view.*
+import com.mamingjuju.d2d.databinding.ActivityMainBinding.inflate
+import kotlinx.android.synthetic.main.empty_list_layout.view.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -16,82 +17,63 @@ import java.time.format.DateTimeFormatter
 class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
                          private val editButtonClickListener: (Long, PassengerInformation) -> Unit,
                          private val cardViewClickListener: (Int, Long) -> Unit,
-                         private val onCallButtonClicked: (String) -> Unit): RecyclerView.Adapter<BookingListAdapter.ViewHolder>(), Filterable {
+                         private val onCallButtonClicked: (String) -> Unit): RecyclerView.Adapter<RecyclerView.ViewHolder>(), Filterable {
 
     private var mDataSet = myDataSet.toList().sortedBy { (_, value) -> LocalDate.parse(value.bookingDate, DateTimeFormatter.ofPattern("EEE, MMMM dd, yyyy")) }
     private var mDataSetFull = myDataSet.toList().sortedBy { (_, value) -> LocalDate.parse(value.bookingDate, DateTimeFormatter.ofPattern("EEE, MMMM dd, yyyy")) }
     private var showHeader: Boolean = false
     private var currentBookingDate: String = ""
 
-    class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-        fun bind(position: Int,
-                 mapOfPassengerInformationToPrimaryKey:  Pair<Long, PassengerInformation>,
-                 showHeader: Boolean,
-                 cardViewClickListener: (Long, PassengerInformation) -> Unit,
-                 removeButtonClickListener: (Int, Long) -> Unit,
-                 onCallButtonClicked: (String) -> Unit) {
-
-            if(showHeader) {
-                itemView.headerContainer.visibility = View.VISIBLE
-                itemView.textViewHeaderBookingDate.text = mapOfPassengerInformationToPrimaryKey.second.bookingDate
-            }
-            else {
-                itemView.headerContainer.visibility = View.GONE
-            }
-
-            itemView.textViewPassengerName.text = mapOfPassengerInformationToPrimaryKey.second.name
-            itemView.textViewContactNumber.text = mapOfPassengerInformationToPrimaryKey.second.number
-            itemView.textViewOrigin.text = mapOfPassengerInformationToPrimaryKey.second.origin
-            itemView.textViewDestination.text = mapOfPassengerInformationToPrimaryKey.second.destination
-            itemView.callButton.setOnClickListener {
-                if (mapOfPassengerInformationToPrimaryKey.second != null) {
-                    if (mapOfPassengerInformationToPrimaryKey.first != null) {
-                        onCallButtonClicked("tel:${mapOfPassengerInformationToPrimaryKey.second.number}")
-                    }
-                }
-            }
-            itemView.removeButton.setOnClickListener {
-                if (mapOfPassengerInformationToPrimaryKey.second != null) {
-                    if (mapOfPassengerInformationToPrimaryKey.first != null) {
-                        removeButtonClickListener(position - 1, mapOfPassengerInformationToPrimaryKey.first)
-                    }
-                }
-            }
-            itemView.setOnClickListener {
-                if (mapOfPassengerInformationToPrimaryKey.second != null) {
-                    if (mapOfPassengerInformationToPrimaryKey.first != null) {
-                        cardViewClickListener(mapOfPassengerInformationToPrimaryKey.first, mapOfPassengerInformationToPrimaryKey.second)
-                    }
-                }
-            }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when(viewType) {
+            R.layout.empty_list_layout -> EmptyListViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.empty_list_layout, parent, false))
+            else -> PassengerInfoViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.booking_detail, parent, false))
         }
-    }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.booking_detail, parent, false)
-        return ViewHolder(view)
+        return EmptyListViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.empty_list_layout, parent, false))
     }
 
     override fun getItemCount(): Int {
-        return mDataSet.size
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        var primaryKeys: MutableList<Long> = mutableListOf()
-        mDataSet.forEach {
-            primaryKeys.add(it.first)
-        }
-
-        if(currentBookingDate != mDataSet[position].second.bookingDate) {
-            showHeader = true
-            currentBookingDate = mDataSet[position].second.bookingDate
+        return if(mDataSet.isEmpty()) {
+            99999
         }
         else {
-            showHeader = false
+            mDataSet.size
         }
+    }
 
-        holder.bind(position + 1, mDataSet[position], showHeader,
-            editButtonClickListener, cardViewClickListener, onCallButtonClicked)
+    override fun getItemViewType(position: Int): Int {
+        return when (mDataSet.size) {
+            0 -> R.layout.empty_list_layout
+            else -> R.layout.booking_detail
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if(holder is PassengerInfoViewHolder) {
+            var primaryKeys: MutableList<Long> = mutableListOf()
+            mDataSet.forEach {
+                primaryKeys.add(it.first)
+            }
+
+            if(currentBookingDate != mDataSet[position].second.bookingDate) {
+                showHeader = true
+                currentBookingDate = mDataSet[position].second.bookingDate
+            }
+            else {
+                showHeader = false
+            }
+
+            holder.bind(position + 1, mDataSet[position], showHeader,
+                editButtonClickListener, cardViewClickListener, onCallButtonClicked)
+        }
+        else if(holder is EmptyListViewHolder){
+            holder.bind("Empty list")
+        }
+    }
+
+    override fun getFilter(): Filter {
+        return dataSetFilter
     }
 
     fun deleteItemFromDataSet(myDataSet: Map<Long, PassengerInformation>) {
@@ -99,10 +81,6 @@ class BookingListAdapter(myDataSet: Map<Long, PassengerInformation>,
         mDataSetFull = myDataSet.toList().sortedBy { (_, value) -> LocalDate.parse(value.bookingDate, DateTimeFormatter.ofPattern("EEE, MMMM dd, yyyy")) }
         currentBookingDate = ""
         notifyDataSetChanged()
-    }
-
-    override fun getFilter(): Filter {
-        return dataSetFilter
     }
 
     private val dataSetFilter: Filter = object : Filter() {
